@@ -1,6 +1,5 @@
 #include <iostream>
 #include <iomanip>
-#include <cmath>
 #include <math.h>
 #include <ostream>
 #include <fstream>
@@ -23,7 +22,7 @@ int main() {
 		val = 1.0/std::sqrt(16.0 * (u<0.5?2.0:1.0) * (x<0.5?2.0:1.0));
 		alfafile.write(reader, 4);
 		// for cos
-		val = std::cos((2.0*x+1.0)*u*0.0625*M_1_PIf32);
+		val = std::cos((2.0*x+1.0)*u*0.0625*3.14159265358979323846);
 		cosfile.write(reader, 4);
 	}
 	alfafile.close();
