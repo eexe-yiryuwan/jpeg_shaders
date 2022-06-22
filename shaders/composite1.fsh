@@ -58,42 +58,56 @@ const vec4 cpqo = sign(cpqi);
 #define DS 0 // [ 0 1 2 3 4 5 6 7 8 9 ]
 #if DS == 1
 	const float dsf = 2.0;
-	const float dsf2 = 4.0;
 #elif DS == 2
 	const float dsf = 3.0;
-	const float dsf2 = 9.0;
 #elif DS == 3
 	const float dsf = 4.0;
-	const float dsf2 = 16.0;
 #elif DS == 4
 	const float dsf = 5.0;
-	const float dsf2 = 25.0;
 #elif DS == 5
 	const float dsf = 8.0;
-	const float dsf2 = 64.0;
 #elif DS == 6
 	const float dsf = 12.0;
-	const float dsf2 = 144.0;
 #elif DS == 7
 	const float dsf = 16.0;
-	const float dsf2 = 256.0;
 #elif DS == 8
 	const float dsf = 24.0;
-	const float dsf2 = 576.0;
 #elif DS == 9
 	const float dsf = 32.0;
-	const float dsf2 = 1024.0;
 #endif
-#if DS == 0
-#else
-	const int dsff = int(dsf);
-	vec2 ds1x;
-	vec2 ds1y;
-	vec2 dsu;
-	vec4 dsacc;
-	vec2 dscrd;
-	int dsii;
-	int dsij;
+#if DS != 0
+	const vec2 dsd = vec2(dsf);
+	vec2 dsc;
+#endif
+
+// supersampling
+// 0 - off
+// 1 - 2x2
+// 2 - 3x3
+// 3 - 4x4
+// 4 - 5x5
+#define SS 0 // [ 0 1 2 3 4 ]
+#if SS == 1
+	const float ssf1 = 2.0;
+	const float ssf2 = 4.0;
+#elif SS == 2
+	const float ssf1 = 3.0;
+	const float ssf2 = 9.0;
+#elif SS == 3
+	const float ssf1 = 4.0;
+	const float ssf2 = 16.0;
+#elif SS == 4
+	const float ssf1 = 5.0;
+	const float ssf2 = 25.0;
+#endif
+#if SS != 0
+	const int ssi1 = int(ssf1);
+	vec2 ss1x;
+	vec2 ss1y;
+	vec2 ssc;
+	vec4 ssa;
+	int ssii;
+	int ssij;
 #endif
 
 // global variables
@@ -101,30 +115,40 @@ vec4 col1;
 float val1;
 
 void main() {
-	// perform downsampling if necessary
+	// perform downsampling and supersampling if necessary
 	#if DS == 0
-		col1 = texture2D(gcolor, _xy);
+		col1 = texture2D(gcolor, _xy); // We just need one regular color
 	#else
-		// init "constants"
-		ds1x = vec2(dsf / _dims.x, 0.0);
-		ds1y = vec2(0.0, dsf / _dims.y);
-		dsu = vec2(dsf, dsf);
+		// initialize stuff that is nesessary regardless of next stuff
 		//
-		dscrd = vec2(0.5)+0.5*_xy; // map cords to <0;1>
-		dscrd = floor( dscrd * _dims / dsu ); // get to the low bound of the sup-pixel {c*k}in<0;dim>
-		dscrd = (vec2(0.5)/dsu) + dscrd; // offset to the center of first sub-pixel in the sup-pixel
-		dscrd = dscrd * dsu / _dims; // scale back to the <0;1> range
-		dscrd = 2.0 * dscrd - vec2(1.0); // map back the coords to <-1;1> range
-		// now accumulate all the sub-pixels
-		dsacc = vec4(0.0);
-		for(dsii = 0; dsii < dsff; dsii++){
-			for(dsij = 0; dsij < dsff; dsij++){
-				dsacc += texture2D(gcolor ,dscrd);
-				dscrd += ds1x;
+		// find the coords of lower band of sup-pixel
+		dsc = vec2(0.5) + 0.5 * _xy; // map tex coords to <0;0.5;1>
+		dsc = floor( 2.0 * dsc * _dims / dsd ); // round new <0;dims;2*dims> to nearest sup-pixel low bound
+		#if SS == 0
+			dsc = vec2(0.5) + dsc; // go to the center of the sup-pixel as will need one sample
+			dsc = 0.5 * dsc * dsd / _dims; // go back to <0;0.5;1>
+			dsc = 2.0 * dsc - vec2(1.0); // map back to og <-1;1;1> range
+			col1 = texture2D(gcolor, dsc); // sample the only necessary color
+		#else
+			// initialize subsampling stuff
+			ss1x = vec2(2.0 * dsf / ssf1 / _dims.x, 0.0); // vector to the next subsample column
+			ss1y = vec2(0.0, 2.0 * dsf / ssf1 / _dims.y); // vec to the next sub-s row
+			//
+			// already have low-bound of sup-pixel in the [dsc] var
+			ssc = dsc + vec2(0.5 / ssf1); // offset to the center of the first sub-sample
+			ssc = 0.5 * ssc * dsd / _dims; // go back to the <0;1> range
+			ssc = 2.0 * ssc - vec2(1.0); // map back to og <-1;1> range
+			// do the sampling of sub-samples
+			ssa = vec4(0.0);
+			for(ssii = 0; ssii < ssi1; ssii++) {
+				for(ssij = 0; ssij < ssi1; ssij++) {
+					ssa += texture2D(gcolor, ssc);
+					ssc += ss1x;
+				}
+				ssc += ss1y - ssf1 * ss1x;
 			}
-			dscrd += ds1y - dsf * ds1x;
-		}
-		col1 = dsacc / dsf2;
+			col1 = ssa / ssf2;
+		#endif
 	#endif
 	//
 	// transform the color if requested
