@@ -24,28 +24,165 @@ const int colortex7Format = R32F;
 // color post-quantization
 // 0 - off
 // 1 - 256 levels
-// 2 - 128 levels
-// 3 - 64 levels
-// 4 - 32 levels
+// 2 - 64 levels
+// 3 - 32 levels
+// 4 - 24 levels
 // 5 - 16 levels
-// 6 - 8 levels
-// 7 - 4 levels
-// 8 - 2 levels
-// 9 - 1 level
+// 6 - 12 levels
+// 7 - 8 levels
+// 8 - 6 levels
+// 9 - 5 levels
+// 10 - 4 level
+// 11 - 3 levels
+// 12 - 2 levels
 #define CRQ1 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
 #define CRQ2 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
 #define CRQ3 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
 #define CRQ4 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
-const float crqf1 = exp2(9 - CRQ1);
-const float crqo1 = sign(CRQ1);
-const float crqf2 = exp2(9 - CRQ2);
-const float crqo2 = sign(CRQ2);
-const float crqf3 = exp2(9 - CRQ3);
-const float crqo3 = sign(CRQ3);
-const float crqf4 = exp2(9 - CRQ4);
-const float crqo4 = sign(CRQ4);
-const vec4 crqf = vec4(crqf1, crqf2, crqf3, crqf4);
-const vec4 crqo = vec4(crqo1, crqo2, crqo3, crqo4);
+#if !(CRQ1 == 0 && CRQ2 == 0 && CRQ3 == 0 && CRQ4 == 0)
+	const vec4 crqf = vec4(
+		#if CRQ1 == 1
+			256.0
+		#elif CRQ1 == 2
+			64.0
+		#elif CRQ1 == 3
+			32.0
+		#elif CRQ1 == 4
+			24.0
+		#elif CRQ1 == 5
+			16.0
+		#elif CRQ1 == 6
+			12.0
+		#elif CRQ1 == 7
+			8.0
+		#elif CRQ1 == 8
+			6.0
+		#elif CRQ1 == 9
+			5.0
+		#elif CRQ1 == 10
+			4.0
+		#elif CRQ1 == 11
+			3.0
+		#elif CRQ1 == 12
+			2.0
+		#endif
+		,
+		#if CRQ1 == 1
+			256.0
+		#elif CRQ1 == 2
+			64.0
+		#elif CRQ1 == 3
+			32.0
+		#elif CRQ1 == 4
+			24.0
+		#elif CRQ1 == 5
+			16.0
+		#elif CRQ1 == 6
+			12.0
+		#elif CRQ1 == 7
+			8.0
+		#elif CRQ1 == 8
+			6.0
+		#elif CRQ1 == 9
+			5.0
+		#elif CRQ1 == 10
+			4.0
+		#elif CRQ1 == 11
+			3.0
+		#elif CRQ1 == 12
+			2.0
+		#endif
+		,
+		#if CRQ1 == 1
+			256.0
+		#elif CRQ1 == 2
+			64.0
+		#elif CRQ1 == 3
+			32.0
+		#elif CRQ1 == 4
+			24.0
+		#elif CRQ1 == 5
+			16.0
+		#elif CRQ1 == 6
+			12.0
+		#elif CRQ1 == 7
+			8.0
+		#elif CRQ1 == 8
+			6.0
+		#elif CRQ1 == 9
+			5.0
+		#elif CRQ1 == 10
+			4.0
+		#elif CRQ1 == 11
+			3.0
+		#elif CRQ1 == 12
+			2.0
+		#endif
+		,
+		#if CRQ1 == 1
+			256.0
+		#elif CRQ1 == 2
+			64.0
+		#elif CRQ1 == 3
+			32.0
+		#elif CRQ1 == 4
+			24.0
+		#elif CRQ1 == 5
+			16.0
+		#elif CRQ1 == 6
+			12.0
+		#elif CRQ1 == 7
+			8.0
+		#elif CRQ1 == 8
+			6.0
+		#elif CRQ1 == 9
+			5.0
+		#elif CRQ1 == 10
+			4.0
+		#elif CRQ1 == 11
+			3.0
+		#elif CRQ1 == 12
+			2.0
+		#endif
+	);
+#endif
+const vec4 crqo = sign(vec4(CRQ1, CRQ2, CRQ3, CRQ4));
+
+// downsampling
+// 0 - off 1:1
+// 1 - 2:1
+// 2 - 3:1
+// 3 - 4:1
+// 4 - 5:1
+// 5 - 8:1
+// 6 - 12:1
+// 7 - 16:1
+// 8 - 24:1
+// 9 - 32:1
+#define DS 0 // [ 0 1 2 3 4 5 6 7 8 9 ]
+#if DS == 1
+	const float dsf = 2.0;
+#elif DS == 2
+	const float dsf = 3.0;
+#elif DS == 3
+	const float dsf = 4.0;
+#elif DS == 4
+	const float dsf = 5.0;
+#elif DS == 5
+	const float dsf = 8.0;
+#elif DS == 6
+	const float dsf = 12.0;
+#elif DS == 7
+	const float dsf = 16.0;
+#elif DS == 8
+	const float dsf = 24.0;
+#elif DS == 9
+	const float dsf = 32.0;
+#endif
+#if DS != 0
+	const vec2 dsd = vec2(dsf);
+	vec2 dsc;
+#endif
 
 // local variables
 vec4 col1;

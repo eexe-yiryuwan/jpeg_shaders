@@ -28,21 +28,129 @@ uniform vec2 _dims;
 // color pre-quantization
 // 0 - off
 // 1 - 256 levels
-// 2 - 128 levels
-// 3 - 64 levels
-// 4 - 32 levels
+// 2 - 64 levels
+// 3 - 32 levels
+// 4 - 24 levels
 // 5 - 16 levels
-// 6 - 8 levels
-// 7 - 4 levels
-// 8 - 2 levels
-// 9 - 1 level
-#define CPQ1 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
-#define CPQ2 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
-#define CPQ3 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
-#define CPQ4 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
-const vec4 cpqi = vec4(CPQ1, CPQ2, CPQ3, CPQ4);
-const vec4 cpqf = exp2(ivec4(9) - cpqi);
-const vec4 cpqo = sign(cpqi);
+// 6 - 12 levels
+// 7 - 8 levels
+// 8 - 6 levels
+// 9 - 5 levels
+// 10 - 4 level
+// 11 - 3 levels
+// 12 - 2 levels
+#define CPQ1 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CPQ2 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CPQ3 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CPQ4 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#if !(CPQ1 == 0 && CPQ2 == 0 && CPQ3 == 0 && CPQ4 == 0)
+	const vec4 cpqf = vec4(
+		#if CPQ1 == 1
+			256.0
+		#elif CPQ1 == 2
+			64.0
+		#elif CPQ1 == 3
+			32.0
+		#elif CPQ1 == 4
+			24.0
+		#elif CPQ1 == 5
+			16.0
+		#elif CPQ1 == 6
+			12.0
+		#elif CPQ1 == 7
+			8.0
+		#elif CPQ1 == 8
+			6.0
+		#elif CPQ1 == 9
+			5.0
+		#elif CPQ1 == 10
+			4.0
+		#elif CPQ1 == 11
+			3.0
+		#elif CPQ1 == 12
+			2.0
+		#endif
+		,
+		#if CPQ1 == 1
+			256.0
+		#elif CPQ1 == 2
+			64.0
+		#elif CPQ1 == 3
+			32.0
+		#elif CPQ1 == 4
+			24.0
+		#elif CPQ1 == 5
+			16.0
+		#elif CPQ1 == 6
+			12.0
+		#elif CPQ1 == 7
+			8.0
+		#elif CPQ1 == 8
+			6.0
+		#elif CPQ1 == 9
+			5.0
+		#elif CPQ1 == 10
+			4.0
+		#elif CPQ1 == 11
+			3.0
+		#elif CPQ1 == 12
+			2.0
+		#endif
+		,
+		#if CPQ1 == 1
+			256.0
+		#elif CPQ1 == 2
+			64.0
+		#elif CPQ1 == 3
+			32.0
+		#elif CPQ1 == 4
+			24.0
+		#elif CPQ1 == 5
+			16.0
+		#elif CPQ1 == 6
+			12.0
+		#elif CPQ1 == 7
+			8.0
+		#elif CPQ1 == 8
+			6.0
+		#elif CPQ1 == 9
+			5.0
+		#elif CPQ1 == 10
+			4.0
+		#elif CPQ1 == 11
+			3.0
+		#elif CPQ1 == 12
+			2.0
+		#endif
+		,
+		#if CPQ1 == 1
+			256.0
+		#elif CPQ1 == 2
+			64.0
+		#elif CPQ1 == 3
+			32.0
+		#elif CPQ1 == 4
+			24.0
+		#elif CPQ1 == 5
+			16.0
+		#elif CPQ1 == 6
+			12.0
+		#elif CPQ1 == 7
+			8.0
+		#elif CPQ1 == 8
+			6.0
+		#elif CPQ1 == 9
+			5.0
+		#elif CPQ1 == 10
+			4.0
+		#elif CPQ1 == 11
+			3.0
+		#elif CPQ1 == 12
+			2.0
+		#endif
+	);
+#endif
+const vec4 cpqo = sign(vec4(CPQ1, CPQ2, CPQ3, CPQ4));
 
 // downsampling
 // 0 - off 1:1
@@ -122,22 +230,19 @@ void main() {
 		// initialize stuff that is nesessary regardless of next stuff
 		//
 		// find the coords of lower band of sup-pixel
-		dsc = vec2(0.5) + 0.5 * _xy; // map tex coords to <0;0.5;1>
-		dsc = floor( 2.0 * dsc * _dims / dsd ); // round new <0;dims;2*dims> to nearest sup-pixel low bound
+		dsc = floor( _xy * _dims / dsd ); // round new <0;dims;dims> to nearest sup-pixel low bound
 		#if SS == 0
 			dsc = vec2(0.5) + dsc; // go to the center of the sup-pixel as will need one sample
 			dsc = 0.5 * dsc * dsd / _dims; // go back to <0;0.5;1>
-			dsc = 2.0 * dsc - vec2(1.0); // map back to og <-1;1;1> range
 			col1 = texture2D(gcolor, dsc); // sample the only necessary color
 		#else
 			// initialize subsampling stuff
-			ss1x = vec2(2.0 * dsf / ssf1 / _dims.x, 0.0); // vector to the next subsample column
-			ss1y = vec2(0.0, 2.0 * dsf / ssf1 / _dims.y); // vec to the next sub-s row
+			ss1x = vec2(dsf / ssf1 / _dims.x, 0.0); // vector to the next subsample column
+			ss1y = vec2(0.0, dsf / ssf1 / _dims.y); // vec to the next sub-s row
 			//
 			// already have low-bound of sup-pixel in the [dsc] var
 			ssc = dsc + vec2(0.5 / ssf1); // offset to the center of the first sub-sample
-			ssc = 0.5 * ssc * dsd / _dims; // go back to the <0;1> range
-			ssc = 2.0 * ssc - vec2(1.0); // map back to og <-1;1> range
+			ssc = ssc * dsd / _dims; // go back to the <0;1> range
 			// do the sampling of sub-samples
 			ssa = vec4(0.0);
 			for(ssii = 0; ssii < ssi1; ssii++) {
@@ -181,8 +286,7 @@ void main() {
 	#endif
 	//
 	// apply color pre-quantization if necessary
-	#if (CPQ1 == 0 && CPQ2 == 0 && CPQ3 == 0 && CPQ4 == 0)
-	#else
+	#if !(CPQ1 == 0 && CPQ2 == 0 && CPQ3 == 0 && CPQ4 == 0)
 		col1 = mix( col1, floor( vec4(0.5) + col1*cpqf ) / cpqf, cpqo );
 	#endif
 	
