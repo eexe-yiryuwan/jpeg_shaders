@@ -232,8 +232,7 @@ void main() {
 		// find the coords of lower band of sup-pixel
 		dsc = floor( _xy * _dims / dsd ); // round new <0;dims;dims> to nearest sup-pixel low bound
 		#if SS == 0
-			dsc = vec2(0.5) + dsc; // go to the center of the sup-pixel as will need one sample
-			dsc = 0.5 * dsc * dsd / _dims; // go back to <0;0.5;1>
+			dsc = ( vec2(0.5) + dsc ) * dsd / _dims; // go back to <0;1>
 			col1 = texture2D(gcolor, dsc); // sample the only necessary color
 		#else
 			// initialize subsampling stuff
@@ -289,9 +288,8 @@ void main() {
 	#if !(CPQ1 == 0 && CPQ2 == 0 && CPQ3 == 0 && CPQ4 == 0)
 		col1 = mix( col1, floor( vec4(0.5) + col1*cpqf ) / cpqf, cpqo );
 	#endif
-	
 	// pass colors further
-	gl_FragData[0] = 2.0 * col1 + vec4(-1.0);
+	gl_FragData[0] = 2.0 * col1 - vec4(1.0);
 	gl_FragData[4] = texture2D(gaux1, _xy);
 	gl_FragData[5] = texture2D(gaux2, _xy);
 }

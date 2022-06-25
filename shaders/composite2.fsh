@@ -83,30 +83,31 @@ void main() {
 	#else
 		dctcj = floor(_xy * _dims); // transform to low bound of full pixels
 	#endif
-	dctci = 8.0 * floor( dctcj / 8.0 ); // get the lower bound of a dct square
-	dctcj = dctcj - dctci; // get where in the square the pixel is
-	dctccx = vec2(0.0625, 0.0625 + dctcj.x / 8.0); // set init position on the cosine texture for x-axis
-	dctccy = vec2(0.0625, 0.0625 + dctcj.y / 8.0); // set init position on the cosine texture for y-axis
-	dctcj = vec2(0.0625) + dctcj / 8.0; // generate coords for alfa texture
+	dctci = dctcj;
+	dctcj = 8.0 * floor( dctcj / 8.0 ); // get the lower bound of a dct square
+	dctci = dctci - dctcj; // get where in the square the pixel is
+	dctccx = vec2(0.0625, 0.0625 + dctci.x / 8.0); // set init position on the cosine texture for x-axis
+	dctccy = vec2(0.0625, 0.0625 + dctci.y / 8.0); // set init position on the cosine texture for y-axis
+	dctci = vec2(0.0625) + dctci / 8.0; // generate coords for alfa texture
 	#if DS != 0
-		dctci = ( vec2(0.5) + dctci ) * dsd / _dims; // transform back to <0;1> range
+		dctcj = ( vec2(0.5) + dctcj ) * dsd / _dims; // transform back to <0;1> range
 	#else
-		dctci = ( vec2(0.5) + dctci ) / _dims; // transform back to <0;1> range
+		dctcj = ( vec2(0.5) + dctcj ) / _dims; // transform back to <0;1> range
 	#endif
 	// now We should probably just dct
 	dcta = vec4(0.0);
 	for(dctii = 0; dctii < 8; dctii++) {
 		for(dctij = 0; dctij < 8; dctij++) {
-			dcta += texture2D(gcolor, dctci) * texture2D(gaux1, dctccx) * texture2D(gaux1, dctccy);
+			dcta += texture2D(gcolor, dctcj) * texture2D(gaux1, dctccx).rrrr * texture2D(gaux1, dctccy).rrrr;
 			dctccx += dctcc1u;
-			dctci += dctci1x;
+			dctcj += dctci1x;
 		}
 		dctccx -= 8.0 * dctcc1u;
 		dctccy += dctcc1u;
-		dctci += dctci1y - 8.0 * dctci1x;
+		dctcj += dctci1y - 8.0 * dctci1x;
 	}
-	col1 = texture2D(gaux2, dctcj) * dcta;
-	//
+	col1 = texture2D(gaux2, dctci).rrrr * dcta;
+	// col1 = texture2D(gcolor, dctcj);
 	gl_FragData[0] = col1;
 	// gl_FragData[0] = texture2D(gcolor, _xy);
 	gl_FragData[4] = texture2D(gaux1, _xy);
