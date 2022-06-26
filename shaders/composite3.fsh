@@ -199,7 +199,7 @@ vec2 dctci1x;
 vec2 dctci1y;
 vec2 dctcca1x;
 vec2 dctcca1y;
-const vec2 dctcc1v = vec2(0.0, 0.125);
+const vec2 dctcc1v = vec2(0.0, 0.125); // vec to the next value of cosine  here We collect frequencies for a pixel
 int dctii;
 int dctij;
 
@@ -208,50 +208,48 @@ vec4 col1;
 float val1;
 
 void main() {
-	// init dct stuff
+	// find dct stuff
+// find dct stuff
 	#if DS == 0
-		dctci1x = vec2(1.0 / _dims.x, 0.0);
-		dctci1y = vec2(0.0, 1.0 / _dims.y);
+		dctci = floor(_xy * _dims); // <0;lb-px;dims/px>  quantize to full pixel beggining (lobo)
 	#else
-		dctci1x = vec2(dsd.x / _dims.x, 0.0);
-		dctci1y = vec2(0.0, dsd.y / _dims.y);
+		dctci = floor(_xy * _dims / dsd); // <0;lb-px;dims/spx>  quantize to full super-pixel beginning (lobo)
 	#endif
-	dctcca = vec2(0.0625, 0.0625); // set init position on the alpha texture
-	dctcca1x = vec2(0.125, 0.0);
-	dctcca1y = vec2(0.0, 0.125);
-	// find the starting points to tha textures for dct stuff
-	#if DS != 0
-		dctcj = floor(_xy * _dims / dsd); // transform to low bound of full super-pixels
+	dctcj = 8.0 * floor( dctci / 8.0 ); // <0;lb-dct;dims/spx>  transform to dct square beggining (lobo)
+	dctci = dctci - dctcj; // pixels - dct-lobo = dct-index   <0;7>   calc index in the dct-square (lobo)
+	dctccx = vec2(0.0625 + 0.125 * dctci.x, 0.0625); // setup initial coords for getting cosine values for x (mid)
+	dctccy = vec2(0.0625 + 0.125 * dctci.y, 0.0625); // setup initial coords for getting cosine values for y (mid)
+	dctcj = dctcj + vec2(0.5); // offset to the center of the first pixel of the dct square (mid)
+	#if DS == 0
+		dctcj = dctcj / _dims; // <0;mid;1> transform back to og texture coords (mid)
+		dctci1x = vec2(1.0 / _dims.x, 0.0); // vec to the next pixel in x dir  aka the width of a pixel
+		dctci1y = vec2(0.0, 1.0 / _dims.y); // vec to the next row of pixels in y dir  aka the height of a pixel
 	#else
-		dctcj = floor(_xy * _dims); // transform to low bound of full pixels
+		dctcj = dctcj * dsd / _dims; // <0;mid;1> transform back to og texture coords (mid)
+		dctci1x = vec2(dsd.x / _dims.x, 0.0); // vec to the next pixel in x dir  aka the width of a pixel
+		dctci1y = vec2(0.0, dsd.y / _dims.y); // vec to the next row of pixels in y dir  aka the height of a pixel
 	#endif
-	dctci = dctcj;
-	dctcj = 8.0 * floor( dctcj / 8.0 ); // get the lower bound of a dct square
-	dctci = dctci - dctcj; // get where in the square the pixel is
-	dctccx = vec2(0.0625 + dctci.x / 8.0, 0.0625); // set init position on the cosine texture for x-axis
-	dctccy = vec2(0.0625 + dctci.y / 8.0, 0.0625); // set init position on the cosine texture for y-axis
-	#if DS != 0
-		dctcj = ( vec2(0.5) + dctcj ) * dsd / _dims; // transform back to <0;1> range
-	#else
-		dctcj = ( vec2(0.5) + dctcj ) / _dims; // transform back to <0;1> range
-	#endif
+	// alpha texture is just: go through all 64 pixels
+	dctcca = vec2(0.0625, 0.0625); // setup coords for getting the alpha values here
+	dctcca1x = vec2(0.125, 0.0); // vector to get the next right alpha value
+	dctcca1y = vec2(0.0, 0.125); // vector to get the next top alpha value
 	// now We should probably just dct
 	dcta = vec4(0.0);
-	for(dctii = 0; dctii < 8; dctii++) {
-		for(dctij = 0; dctij < 8; dctij++) {
+	for(dctii=0;dctii<8;dctii++){
+		for(dctij=0;dctij<8;dctij++){
 			dcta += texture2D(gaux2, dctcca).rrrr * texture2D(gcolor, dctcj) * texture2D(gaux1, dctccx).rrrr * texture2D(gaux1, dctccy).rrrr;
-			dctccx += dctcc1v;
-			dctcj += dctci1x;
-			dctcca += dctcca1x;
+			dctcj += dctci1x; // go to the next pixel, to the right
+			dctcca += dctcca1x; // go to the next alpha, to the right
+			dctccx += dctcc1v;  // so should the cosine coef coord go up
 		}
-		dctccx -= 8.0 * dctcc1v;
-		dctccy += dctcc1v;
-		dctcj += dctci1y - 8.0 * dctci1x;
-		dctcca += dctcca1y - 8.0 * dctcca1x;
+		dctcj += dctci1y - 8.0 * dctci1x; // go back to the first pixel left, and one up
+		dctcca += dctcca1y - 8.0 * dctcca1x; // go back to the first alpha left, and one up
+		dctccx -= 8.0 * dctcc1v; // new line = reset x cosine coef
+		dctccy += dctcc1v; // new line requires y coef to change to the next
 	}
 	col1 = 0.5 * dcta + vec4(0.5);
-	// col1 = 0.5 * texture2D(gcolor, _xy) + vec4(0.5);
-	// apply color pre-quantization if necessary
+	//col1 = 0.5 * texture2D(gcolor, _xy) + vec4(0.5);
+	// apply color post-quantization if necessary
 	#if (CRQ1 == 0 && CRQ2 == 0 && CRQ3 == 0 && CRQ4 == 0)
 	#else
 		col1 = mix( col1, floor( vec4(0.5) + col1*crqf ) / crqf, crqo );
@@ -277,6 +275,57 @@ void main() {
 	#endif
 	// pass colors further
 	gl_FragData[0] = col1;
+	// gl_FragData[0] = vec4(0.5 * texture2D(gaux3, _xy).rrr + vec3(0.5), 1.0);
 	gl_FragData[4] = texture2D(gaux1, _xy);
 	gl_FragData[5] = texture2D(gaux2, _xy);
 }
+
+
+
+// // init dct stuff
+	// #if DS == 0
+	// 	dctci1x = vec2(1.0 / _dims.x, 0.0);
+	// 	dctci1y = vec2(0.0, 1.0 / _dims.y);
+	// #else
+	// 	dctci1x = vec2(dsd.x / _dims.x, 0.0);
+	// 	dctci1y = vec2(0.0, dsd.y / _dims.y);
+	// #endif
+	// dctcca = vec2(0.0625, 0.0625); // set init position on the alpha texture
+	// dctcca1x = vec2(0.125, 0.0);
+	// dctcca1y = vec2(0.0, 0.125);
+	// // find the starting points to tha textures for dct stuff
+	// #if DS != 0
+	// 	dctcj = floor(_xy * _dims / dsd); // transform to low bound of full super-pixels
+	// #else
+	// 	dctcj = floor(_xy * _dims); // transform to low bound of full pixels
+	// #endif
+	// dctci = dctcj;
+	// dctcj = 8.0 * floor( dctcj / 8.0 ); // get the lower bound of a dct square
+	// dctci = dctci - dctcj; // get where in the square the pixel is
+	// dctccx = vec2(0.0625 + 0.125 * dctci.x, 0.0625); // set init position on the cosine texture for x-axis
+	// dctccy = vec2(0.0625 + 0.125 * dctci.y, 0.0625); // set init position on the cosine texture for y-axis
+	// #if DS != 0
+	// 	dctcj = ( vec2(0.5) + dctcj ) * dsd / _dims; // transform back to <0;1> range
+	// #else
+	// 	dctcj = ( vec2(0.5) + dctcj ) / _dims; // transform back to <0;1> range
+	// #endif
+	// // now We should probably just dct
+	// dcta = vec4(0.0);
+	// for(dctii = 0; dctii < 8; dctii++) {
+	// 	for(dctij = 0; dctij < 8; dctij++) {
+	// 		dcta += 
+	// 				  texture2D(gaux2, dctcca).rrrr
+	// 				* texture2D(gcolor, dctcj)
+	// 				* texture2D(gaux1, dctccx).rrrr
+	// 				* texture2D(gaux1, dctccy).rrrr
+	// 		;
+	// 		dctccx += dctcc1v;
+	// 		dctcj += dctci1x;
+	// 		dctcca += dctcca1x;
+	// 	}
+	// 	dctccx -= 8.0 * dctcc1v;
+	// 	dctccy += dctcc1v;
+	// 	dctcj += dctci1y - 8.0 * dctci1x;
+	// 	dctcca += dctcca1y - 8.0 * dctcca1x;
+	// }
+	// col1 = 0.5 * dcta + vec4(0.5);
