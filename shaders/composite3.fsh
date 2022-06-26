@@ -278,6 +278,7 @@ void main() {
 	// gl_FragData[0] = vec4(0.5 * texture2D(gaux3, _xy).rrr + vec3(0.5), 1.0);
 	gl_FragData[4] = texture2D(gaux1, _xy);
 	gl_FragData[5] = texture2D(gaux2, _xy);
+	gl_FragData[6] = texture2D(gaux3, _xy);
 }
 
 

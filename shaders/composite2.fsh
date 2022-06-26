@@ -5,6 +5,8 @@ varying vec2 _xy;
 uniform sampler2D gcolor;
 uniform sampler2D gaux1;
 uniform sampler2D gaux2;
+uniform sampler2D gaux3;
+uniform sampler2D gaux4;
 /*
 const int colortex0Format = RGBA32F;
 const int colortex4Format = R32F;
@@ -65,6 +67,70 @@ const vec2 dctcc1u = vec2(0.125, 0.0); // vec to the next value of cosine  aka w
 int dctii;
 int dctij;
 
+// dct coef quantization
+// 0 - off
+// 1 - og jpeg quants
+// 2 - constant treshold
+// 3 - linear treshold
+// 4 - sigma treshold
+#define DCQ 0 // [ 0 1 ]
+// dct coef quantization quality factor for  og jpeg quants
+// 0 - 100
+// 1 - 96
+// 2 - 92
+// 3 - 86
+// 4 - 78
+// 5 - 68
+// 6 - 52
+// 7 - 42
+// 8 - 34
+// 9 - 27
+// 10 - 21
+// 11 - 17
+// 12 - 12
+// 13 - 9
+// 14 - 7
+// 15 - 5
+//
+#define DCQQ 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ]
+#if DCQ == 1
+	// dcqs = (Q<50)? 5000/Q : 200-2*Q;
+	#if DCQQ == 0
+		const vec4 dcqs = vec4(0.0);
+	#elif DCQQ == 1
+		const vec4 dcqs = vec4(8.0);
+	#elif DCQQ == 2
+		const vec4 dcqs = vec4(16.0);
+	#elif DCQQ == 3
+		const vec4 dcqs = vec4(28.0);
+	#elif DCQQ == 4
+		const vec4 dcqs = vec4(44.0);
+	#elif DCQQ == 5
+		const vec4 dcqs = vec4(64.0);
+	#elif DCQQ == 6
+		const vec4 dcqs = vec4(96.0);
+	#elif DCQQ == 7
+		const vec4 dcqs = vec4(119.04761904761905);
+	#elif DCQQ == 8
+		const vec4 dcqs = vec4(147.05882352941177);
+	#elif DCQQ == 9
+		const vec4 dcqs = vec4(185.1851851851852);
+	#elif DCQQ == 10
+		const vec4 dcqs = vec4(238.0952380952381);
+	#elif DCQQ == 11
+		const vec4 dcqs = vec4(294.11764705882354);
+	#elif DCQQ == 12
+		const vec4 dcqs = vec4(416.6666666666667);
+	#elif DCQQ == 13
+		const vec4 dcqs = vec4(555.5555555555555);
+	#elif DCQQ == 14
+		const vec4 dcqs = vec4(714.2857142857143);
+	#elif DCQQ == 15
+		const vec4 dcqs = vec4(1000.0);
+	#endif
+	vec4 dcqq;
+#endif
+
 // local variables
 vec4 col1;
 
@@ -79,7 +145,7 @@ void main() {
 	dctci = dctci - dctcj; // pixels - dct-lobo = dct-index   <0;7>   calc index in the dct-square (lobo)
 	dctccx = vec2(0.0625, 0.0625 + 0.125 * dctci.x); // setup initial coords for getting cosine values for x (mid)
 	dctccy = vec2(0.0625, 0.0625 + 0.125 * dctci.y); // setup initial coords for getting cosine values for y (mid)
-	dctci = vec2(0.0625) + 0.125 * dctci; // setup coords for getting alpha value (mid)
+	dctci = vec2(0.0625) + 0.125 * dctci; // setup coords for getting alpha value.. and possibly quantization coef (mid)
 	dctcj = dctcj + vec2(0.5); // offset to the center of the first pixel of the dct square (mid)
 	#if DS == 0
 		dctcj = dctcj / _dims; // <0;mid;1> transform back to og texture coords (mid)
@@ -104,20 +170,17 @@ void main() {
 		dctccy += dctcc1u; // new line requires y coef to change to the next
 	}
 	col1 = texture2D(gaux2, dctci).rrrr * dcta;
-	// col1 = texture2D(gcolor, dctcj);
-	// gl_FragData[0] = vec4(step(vec3(0.01), texture2D(gcolor, (dctcj + vec2(0.5))*dsd/_dims).rgb - texture2D(gcolor, _xy).rgb), 1.0);
-	// gl_FragData[0] = vec4(texture2D(gaux1, dctccy + vec2(0.125 * mod(floor(_xy.x * _dims.x / dsd.x), 8.0), 0.0)).rrr, 1.0);
-	// gl_FragData[0] = vec4(texture2D(gcolor, dctcj).rgb, 1.0);
-	// gl_FragData[0] = vec4(step(vec2(2.1 / _dims.x,0.1), dctci1x), 0.0, 1.0);
+	// perform coef quantization as necessary
+	#if DCQ == 1
+		dcqq = floor((dcqs * texture2D(gaux3, dctci).rrrr + vec4(50.0)) / 100.0);
+		col1 = col1 * 128.0 / dcqq;
+		col1 = 0.5 * ceil(col1 + 0.5) + 0.5 * floor(col1 - 0.5);
+		col1 = col1 * dcqq / 128.0;
+	#endif
 	gl_FragData[0] = col1;
-	// #if DS != 0
-	// gl_FragData[0] = vec4(step(vec3(0.01), col1.rgb - texture2D(gcolor, (vec2(0.5) + floor(_xy * 8.0 * _dims / dsd)) * dsd / 8.0 /_dims).rgb), 1.0);
-	// #else
-	// gl_FragData[0] = vec4(step(vec3(0.01), col1.rgb - texture2D(gcolor, (vec2(0.5) + floor(_xy * 8.0 * _dims)) / 8.0 /_dims).rgb), 1.0);
-	// #endif
 	gl_FragData[4] = texture2D(gaux1, _xy);
 	gl_FragData[5] = texture2D(gaux2, _xy);
-	// gl_FragData[6] = texture2D(gaux2, dctci).rrrr;
+	gl_FragData[6] = texture2D(gaux3, _xy);
 }
 
 
