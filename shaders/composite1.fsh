@@ -39,13 +39,15 @@ uniform vec2 _dims;
 // 10 - 4 level
 // 11 - 3 levels
 // 12 - 2 levels
-#define CPQ1 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
-#define CPQ2 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
-#define CPQ3 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
-#define CPQ4 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CPQ1 2 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CPQ2 4 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CPQ3 4 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CPQ4 0 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
 #if !(CPQ1 == 0 && CPQ2 == 0 && CPQ3 == 0 && CPQ4 == 0)
 	const vec4 cpqf = vec4(
-		#if CPQ1 == 1
+		#if CPQ1 == 0
+			1024.0
+		#elif CPQ1 == 1
 			256.0
 		#elif CPQ1 == 2
 			64.0
@@ -71,81 +73,87 @@ uniform vec2 _dims;
 			2.0
 		#endif
 		,
-		#if CPQ1 == 1
+		#if CPQ2 == 0
+			1024.0
+		#elif CPQ2 == 1
 			256.0
-		#elif CPQ1 == 2
+		#elif CPQ2 == 2
 			64.0
-		#elif CPQ1 == 3
+		#elif CPQ2 == 3
 			32.0
-		#elif CPQ1 == 4
+		#elif CPQ2 == 4
 			24.0
-		#elif CPQ1 == 5
+		#elif CPQ2 == 5
 			16.0
-		#elif CPQ1 == 6
+		#elif CPQ2 == 6
 			12.0
-		#elif CPQ1 == 7
+		#elif CPQ2 == 7
 			8.0
-		#elif CPQ1 == 8
+		#elif CPQ2 == 8
 			6.0
-		#elif CPQ1 == 9
+		#elif CPQ2 == 9
 			5.0
-		#elif CPQ1 == 10
+		#elif CPQ2 == 10
 			4.0
-		#elif CPQ1 == 11
+		#elif CPQ2 == 11
 			3.0
-		#elif CPQ1 == 12
+		#elif CPQ2 == 12
 			2.0
 		#endif
 		,
-		#if CPQ1 == 1
+		#if CPQ3 == 0
+			1024.0
+		#elif CPQ3 == 1
 			256.0
-		#elif CPQ1 == 2
+		#elif CPQ3 == 2
 			64.0
-		#elif CPQ1 == 3
+		#elif CPQ3 == 3
 			32.0
-		#elif CPQ1 == 4
+		#elif CPQ3 == 4
 			24.0
-		#elif CPQ1 == 5
+		#elif CPQ3 == 5
 			16.0
-		#elif CPQ1 == 6
+		#elif CPQ3 == 6
 			12.0
-		#elif CPQ1 == 7
+		#elif CPQ3 == 7
 			8.0
-		#elif CPQ1 == 8
+		#elif CPQ3 == 8
 			6.0
-		#elif CPQ1 == 9
+		#elif CPQ3 == 9
 			5.0
-		#elif CPQ1 == 10
+		#elif CPQ3 == 10
 			4.0
-		#elif CPQ1 == 11
+		#elif CPQ3 == 11
 			3.0
-		#elif CPQ1 == 12
+		#elif CPQ3 == 12
 			2.0
 		#endif
 		,
-		#if CPQ1 == 1
+		#if CPQ4 == 0
+			1024.0
+		#elif CPQ4 == 1
 			256.0
-		#elif CPQ1 == 2
+		#elif CPQ4 == 2
 			64.0
-		#elif CPQ1 == 3
+		#elif CPQ4 == 3
 			32.0
-		#elif CPQ1 == 4
+		#elif CPQ4 == 4
 			24.0
-		#elif CPQ1 == 5
+		#elif CPQ4 == 5
 			16.0
-		#elif CPQ1 == 6
+		#elif CPQ4 == 6
 			12.0
-		#elif CPQ1 == 7
+		#elif CPQ4 == 7
 			8.0
-		#elif CPQ1 == 8
+		#elif CPQ4 == 8
 			6.0
-		#elif CPQ1 == 9
+		#elif CPQ4 == 9
 			5.0
-		#elif CPQ1 == 10
+		#elif CPQ4 == 10
 			4.0
-		#elif CPQ1 == 11
+		#elif CPQ4 == 11
 			3.0
-		#elif CPQ1 == 12
+		#elif CPQ4 == 12
 			2.0
 		#endif
 	);
@@ -163,7 +171,7 @@ const vec4 cpqo = sign(vec4(CPQ1, CPQ2, CPQ3, CPQ4));
 // 7 - 16:1
 // 8 - 24:1
 // 9 - 32:1
-#define DS 0 // [ 0 1 2 3 4 5 6 7 8 9 ]
+#define DS 4 // [ 0 1 2 3 4 5 6 7 8 9 ]
 #if DS == 1
 	const float dsf = 2.0;
 #elif DS == 2
@@ -194,7 +202,7 @@ const vec4 cpqo = sign(vec4(CPQ1, CPQ2, CPQ3, CPQ4));
 // 2 - 3x3
 // 3 - 4x4
 // 4 - 5x5
-#define SS 0 // [ 0 1 2 3 4 ]
+#define SS 2 // [ 0 1 2 3 4 ]
 #if SS == 1
 	const float ssf1 = 2.0;
 	const float ssf2 = 4.0;

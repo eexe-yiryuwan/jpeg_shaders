@@ -39,13 +39,15 @@ uniform vec2 _dims;
 // 10 - 4 level
 // 11 - 3 levels
 // 12 - 2 levels
-#define CRQ1 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
-#define CRQ2 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
-#define CRQ3 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
-#define CRQ4 1 // [ 0 1 2 3 4 5 6 7 8 9 ]
+#define CRQ1 0 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CRQ2 0 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CRQ3 0 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CRQ4 0 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
 #if !(CRQ1 == 0 && CRQ2 == 0 && CRQ3 == 0 && CRQ4 == 0)
 	const vec4 crqf = vec4(
-		#if CRQ1 == 1
+		#if CRQ1 == 0
+			1024.0
+		#elif CRQ1 == 1
 			256.0
 		#elif CRQ1 == 2
 			64.0
@@ -71,81 +73,87 @@ uniform vec2 _dims;
 			2.0
 		#endif
 		,
-		#if CRQ1 == 1
+		#if CRQ2 == 0
+			1024.0
+		#elif CRQ2 == 1
 			256.0
-		#elif CRQ1 == 2
+		#elif CRQ2 == 2
 			64.0
-		#elif CRQ1 == 3
+		#elif CRQ2 == 3
 			32.0
-		#elif CRQ1 == 4
+		#elif CRQ2 == 4
 			24.0
-		#elif CRQ1 == 5
+		#elif CRQ2 == 5
 			16.0
-		#elif CRQ1 == 6
+		#elif CRQ2 == 6
 			12.0
-		#elif CRQ1 == 7
+		#elif CRQ2 == 7
 			8.0
-		#elif CRQ1 == 8
+		#elif CRQ2 == 8
 			6.0
-		#elif CRQ1 == 9
+		#elif CRQ2 == 9
 			5.0
-		#elif CRQ1 == 10
+		#elif CRQ2 == 10
 			4.0
-		#elif CRQ1 == 11
+		#elif CRQ2 == 11
 			3.0
-		#elif CRQ1 == 12
+		#elif CRQ2 == 12
 			2.0
 		#endif
 		,
-		#if CRQ1 == 1
+		#if CRQ3 == 0
+			1024.0
+		#elif CRQ3 == 1
 			256.0
-		#elif CRQ1 == 2
+		#elif CRQ3 == 2
 			64.0
-		#elif CRQ1 == 3
+		#elif CRQ3 == 3
 			32.0
-		#elif CRQ1 == 4
+		#elif CRQ3 == 4
 			24.0
-		#elif CRQ1 == 5
+		#elif CRQ3 == 5
 			16.0
-		#elif CRQ1 == 6
+		#elif CRQ3 == 6
 			12.0
-		#elif CRQ1 == 7
+		#elif CRQ3 == 7
 			8.0
-		#elif CRQ1 == 8
+		#elif CRQ3 == 8
 			6.0
-		#elif CRQ1 == 9
+		#elif CRQ3 == 9
 			5.0
-		#elif CRQ1 == 10
+		#elif CRQ3 == 10
 			4.0
-		#elif CRQ1 == 11
+		#elif CRQ3 == 11
 			3.0
-		#elif CRQ1 == 12
+		#elif CRQ3 == 12
 			2.0
 		#endif
 		,
-		#if CRQ1 == 1
+		#if CRQ4 == 0
+			1024.0
+		#elif CRQ4 == 1
 			256.0
-		#elif CRQ1 == 2
+		#elif CRQ4 == 2
 			64.0
-		#elif CRQ1 == 3
+		#elif CRQ4 == 3
 			32.0
-		#elif CRQ1 == 4
+		#elif CRQ4 == 4
 			24.0
-		#elif CRQ1 == 5
+		#elif CRQ4 == 5
 			16.0
-		#elif CRQ1 == 6
+		#elif CRQ4 == 6
 			12.0
-		#elif CRQ1 == 7
+		#elif CRQ4 == 7
 			8.0
-		#elif CRQ1 == 8
+		#elif CRQ4 == 8
 			6.0
-		#elif CRQ1 == 9
+		#elif CRQ4 == 9
 			5.0
-		#elif CRQ1 == 10
+		#elif CRQ4 == 10
 			4.0
-		#elif CRQ1 == 11
+		#elif CRQ4 == 11
 			3.0
-		#elif CRQ1 == 12
+		#elif CRQ4 == 12
 			2.0
 		#endif
 	);
@@ -163,7 +171,7 @@ const vec4 crqo = sign(vec4(CRQ1, CRQ2, CRQ3, CRQ4));
 // 7 - 16:1
 // 8 - 24:1
 // 9 - 32:1
-#define DS 0 // [ 0 1 2 3 4 5 6 7 8 9 ]
+#define DS 4 // [ 0 1 2 3 4 5 6 7 8 9 ]
 #if DS == 1
 	const float dsf = 2.0;
 #elif DS == 2

@@ -30,7 +30,7 @@ uniform vec2 _dims;
 // 7 - 16:1
 // 8 - 24:1
 // 9 - 32:1
-#define DS 0 // [ 0 1 2 3 4 5 6 7 8 9 ]
+#define DS 4 // [ 0 1 2 3 4 5 6 7 8 9 ]
 #if DS == 1
 	const float dsf = 2.0;
 #elif DS == 2
@@ -73,7 +73,7 @@ int dctij;
 // 2 - constant treshold
 // 3 - linear treshold
 // 4 - sigma treshold
-#define DCQ 0 // [ 0 1 ]
+#define DCQ 1 // [ 0 1 ]
 // dct coef quantization quality factor for  og jpeg quants
 // 0 - 100
 // 1 - 96
@@ -92,7 +92,7 @@ int dctij;
 // 14 - 7
 // 15 - 5
 //
-#define DCQQ 1 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ]
+#define DCQQ 4 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ]
 #if DCQ == 1
 	// dcqs = (Q<50)? 5000/Q : 200-2*Q;
 	#if DCQQ == 0
@@ -182,55 +182,3 @@ void main() {
 	gl_FragData[5] = texture2D(gaux2, _xy);
 	gl_FragData[6] = texture2D(gaux3, _xy);
 }
-
-
-
-
-
-	// #if DS == 0
-	// 	dctci1x = vec2(1.0 / _dims.x, 0.0);
-	// 	dctci1y = vec2(0.0, 1.0 / _dims.y);
-	// #else
-	// 	dctci1x = vec2(dsd.x / _dims.x, 0.0);
-	// 	dctci1y = vec2(0.0, dsd.y / _dims.y);
-	// #endif
-
-	// #if DS != 0
-	// 	dctcj = ( floor(_xy * _dims / dsd) + vec2(0.5) ) * dsd / _dims; // transform to low bound of full super-pixels
-	// #else
-	// 	dctcj = ( floor(_xy * _dims) + vec2(0.5) ) / _dims; // transform to low bound of full pixels
-	// #endif
-
-	// dctci = dctcj;
-	// dctcj = 8.0 * floor( dctcj / 8.0 ); // get the lower bound of a dct square
-	// dctci = dctci - dctcj; // get where in the square the pixel is
-	// dctci = vec2(0.0625) + 0.125 * dctci; // generate coords for alfa texture
-	// dctccx = vec2(0.0625, dctci.x); // set init position on the cosine texture for x-axis
-	// dctccy = vec2(0.0625, dctci.y); // set init position on the cosine texture for y-axis
-	// #if DS != 0
-	// 	dctcj = ( vec2(0.5) + dctcj ) * dsd / _dims; // transform back to <0;1> range
-	// #else
-	// 	dctcj = ( vec2(0.5) + dctcj ) / _dims; // transform back to <0;1> range
-	// #endif
-
-
-		// dcta = vec4(0.0);
-	// for(dctii = 0; dctii < 8; dctii++) {
-	// 	for(dctij = 0; dctij < 8; dctij++) {
-	// 		dcta +=
-	// 				  texture2D(gcolor, dctcj)
-	// 				* texture2D(gaux1, dctccx).rrrr
-	// 				* texture2D(gaux1, dctccy).rrrr
-	// 		;
-	// 		// dcta += texture2D(gcolor, dctcj);
-	// 		dctccx += dctcc1u;
-	// 		dctcj += dctci1x;
-	// 	}
-	// 	dctccx -= 8.0 * dctcc1u;
-	// 	dctccy += dctcc1u;
-	// 	dctcj += dctci1y - 8.0 * dctci1x;
-	// }
-	// col1 = texture2D(gaux2, dctci).rrrr * dcta;
-	// col1 = dcta;
-	// col1 = texture2D(gcolor, _xy);
-	// gl_FragData[0] = col1;
