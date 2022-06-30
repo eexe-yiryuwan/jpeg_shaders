@@ -261,7 +261,11 @@ void main() {
 	col1 = texture2D(gaux2, vec2(0.0625) + dctci).rrrr * dcta;
 	// perform coef quantization as necessary
 	#if DCQ == 1
-		dcqq = floor((dcqs * texture2D(gaux3, vec2(0.0625) + dctci).rrrr + vec4(50.0)) / 100.0);
+		#if DCQQ == 0
+			dcqq = vec4(1.0);
+		#else
+			dcqq = floor((dcqs * texture2D(gaux3, vec2(0.0625) + dctci).rrrr + vec4(50.0)) / 100.0);
+		#endif
 		col1 = col1 * 128.0 / dcqq;
 		col1 = 0.5 * ceil(col1 + 0.5) + 0.5 * floor(col1 - 0.5);
 		col1 = col1 * dcqq / 128.0;
