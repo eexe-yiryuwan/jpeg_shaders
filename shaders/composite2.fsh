@@ -73,7 +73,7 @@ int dctij;
 // 2 - constant treshold
 // 3 - linear treshold
 // 4 - sigma treshold
-#define DCQ 1 // [ 0 1 ]
+#define DCQ 1 // [ 0 1 2 3 ]
 // dct coef quantization quality factor for  og jpeg quants
 // 0 - 100
 // 1 - 96
@@ -91,7 +91,6 @@ int dctij;
 // 13 - 9
 // 14 - 7
 // 15 - 5
-//
 #define DCQQ 4 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ]
 #if DCQ == 1
 	// dcqs = (Q<50)? 5000/Q : 200-2*Q;
@@ -131,6 +130,96 @@ int dctij;
 	vec4 dcqq;
 #endif
 
+// DCT Coeficients constant tReshold
+// 1 - 1.0
+// 2 - 10.0
+// 3 - 15.0
+// 4 - 20.0
+// 5 - 25.0
+// 6 - 30.0
+// 7 - 40.0
+// 8 - 50.0
+#define DCR 5 // [1 2 3 4 5 6 7 8]
+#if DCQ == 2
+	#if DCR == 1
+		const vec4 dcr = vec4(1.0);
+	#elif DCR == 2
+		const vec4 dcr = vec4(10.0);
+	#elif DCR == 3
+		const vec4 dcr = vec4(15.0);
+	#elif DCR == 4
+		const vec4 dcr = vec4(20.0);
+	#elif DCR == 5
+		const vec4 dcr = vec4(25.0);
+	#elif DCR == 6
+		const vec4 dcr = vec4(30.0);
+	#elif DCR == 7
+		const vec4 dcr = vec4(40.0);
+	#elif DCR == 8
+		const vec4 dcr = vec4(50.0);
+	#endif
+#endif
+
+// DCT Coeficients linear tReshold slope
+// 1 - 1.0
+// 2 - 10.0
+// 3 - 15.0
+// 4 - 20.0
+// 5 - 25.0
+// 6 - 30.0
+// 7 - 40.0
+// 8 - 50.0
+#define DCLA 5 // [1 2 3 4 5 6 7 8]
+#if DCQ == 3
+	#if DCLA == 1
+		const vec4 dcla = vec4(1.0);
+	#elif DCLA == 2
+		const vec4 dcla = vec4(10.0);
+	#elif DCLA == 3
+		const vec4 dcla = vec4(15.0);
+	#elif DCLA == 4
+		const vec4 dcla = vec4(20.0);
+	#elif DCLA == 5
+		const vec4 dcla = vec4(25.0);
+	#elif DCLA == 6
+		const vec4 dcla = vec4(30.0);
+	#elif DCLA == 7
+		const vec4 dcla = vec4(40.0);
+	#elif DCLA == 8
+		const vec4 dcla = vec4(50.0);
+	#endif
+#endif
+
+// DCT Coeficients linear tReshold base
+// 1 - 1.0
+// 2 - 10.0
+// 3 - 15.0
+// 4 - 20.0
+// 5 - 25.0
+// 6 - 30.0
+// 7 - 40.0
+// 8 - 50.0
+#define DCLB 2 // [1 2 3 4 5 6 7 8]
+#if DCQ == 3
+	#if DCLB == 1
+		const vec4 dclb = vec4(1.0);
+	#elif DCLB == 2
+		const vec4 dclb = vec4(10.0);
+	#elif DCLB == 3
+		const vec4 dclb = vec4(15.0);
+	#elif DCLB == 4
+		const vec4 dclb = vec4(20.0);
+	#elif DCLB == 5
+		const vec4 dclb = vec4(25.0);
+	#elif DCLB == 6
+		const vec4 dclb = vec4(30.0);
+	#elif DCLB == 7
+		const vec4 dclb = vec4(40.0);
+	#elif DCLB == 8
+		const vec4 dclb = vec4(50.0);
+	#endif
+#endif
+
 // local variables
 vec4 col1;
 
@@ -145,7 +234,7 @@ void main() {
 	dctci = dctci - dctcj; // pixels - dct-lobo = dct-index   <0;7>   calc index in the dct-square (lobo)
 	dctccx = vec2(0.0625, 0.0625 + 0.125 * dctci.x); // setup initial coords for getting cosine values for x (mid)
 	dctccy = vec2(0.0625, 0.0625 + 0.125 * dctci.y); // setup initial coords for getting cosine values for y (mid)
-	dctci = vec2(0.0625) + 0.125 * dctci; // setup coords for getting alpha value.. and possibly quantization coef (mid)
+	dctci = 0.125 * dctci; // setup coords for getting alpha value.. and possibly quantization coef (mid)
 	dctcj = dctcj + vec2(0.5); // offset to the center of the first pixel of the dct square (mid)
 	#if DS == 0
 		dctcj = dctcj / _dims; // <0;mid;1> transform back to og texture coords (mid)
@@ -169,13 +258,17 @@ void main() {
 		dctccx -= 8.0 * dctcc1u; // new line = reset x cosine coef
 		dctccy += dctcc1u; // new line requires y coef to change to the next
 	}
-	col1 = texture2D(gaux2, dctci).rrrr * dcta;
+	col1 = texture2D(gaux2, vec2(0.0625) + dctci).rrrr * dcta;
 	// perform coef quantization as necessary
 	#if DCQ == 1
-		dcqq = floor((dcqs * texture2D(gaux3, dctci).rrrr + vec4(50.0)) / 100.0);
+		dcqq = floor((dcqs * texture2D(gaux3, vec2(0.0625) + dctci).rrrr + vec4(50.0)) / 100.0);
 		col1 = col1 * 128.0 / dcqq;
 		col1 = 0.5 * ceil(col1 + 0.5) + 0.5 * floor(col1 - 0.5);
 		col1 = col1 * dcqq / 128.0;
+	#elif DCQ == 2
+		col1 = mix(vec4(0.0), col1, step(dcr, abs(256.0*col1)));
+	#elif DCQ == 3
+		col1 = mix(vec4(0.0), col1, step(dclb + dcla * length(dctci), abs(256.0*col1)));
 	#endif
 	gl_FragData[0] = col1;
 	gl_FragData[4] = texture2D(gaux1, _xy);
