@@ -40,8 +40,8 @@ uniform vec2 _dims;
 // 11 - 3 levels
 // 12 - 2 levels
 #define CPQ1 2 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
-#define CPQ2 4 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
-#define CPQ3 4 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CPQ2 3 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
+#define CPQ3 3 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
 #define CPQ4 0 // [ 0 1 2 3 4 5 6 7 8 9 10 11 12 ]
 #if !(CPQ1 == 0 && CPQ2 == 0 && CPQ3 == 0 && CPQ4 == 0)
 	const vec4 cpqf = vec4(
