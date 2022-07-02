@@ -202,7 +202,7 @@ const vec4 cpqo = sign(vec4(CPQ1, CPQ2, CPQ3, CPQ4));
 // 2 - 3x3
 // 3 - 4x4
 // 4 - 5x5
-#define SS 2 // [ 0 1 2 3 4 ]
+#define SS 0 // [ 0 1 2 3 4 ]
 #if SS == 1
 	const float ssf1 = 2.0;
 	const float ssf2 = 4.0;

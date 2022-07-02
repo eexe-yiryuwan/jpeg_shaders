@@ -72,8 +72,8 @@ int dctij;
 // 1 - og jpeg quants
 // 2 - constant treshold
 // 3 - linear treshold
-// 4 - sigma treshold
 #define DCQ 1 // [ 0 1 2 3 ]
+
 // dct coef quantization quality factor for  og jpeg quants
 // 0 - 100
 // 1 - 96
