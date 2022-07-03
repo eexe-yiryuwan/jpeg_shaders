@@ -208,6 +208,9 @@ uniform vec2 _dims;
 	#endif
 #endif
 
+// dct style
+
+
 // discrete cosine transform stuff
 vec4 dcta;
 vec2 dctci;
@@ -275,7 +278,6 @@ void main() {
 
 
 
-// // find dct stuff
 // // find dct stuff
 // 	#if DS == 0
 // 		dctci = floor(_xy * _dims); // <0;lb-px;dims/px>  quantize to full pixel beggining (lobo)
