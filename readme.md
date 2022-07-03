@@ -14,7 +14,7 @@
 |9.|Show Me tha screenshotz!|[Jump](#9-show-me-tha-screenshotz)|
 ## 1. Disclaimers...
 1. I'm sorry for any ***inconvenience*** and eyesore due to my spelling, as i'm not a native english speaker, but a polish person who grew up with english. I'm kinda ***surprised***, that i remember the spellings of ***these*** ***difficult*** words. It's ***naturally*** hard. - Well, if You Guyz find any mistakes, let me know or Let's fix them.
-
+2. Sorry for any overlooks.
 [Take me up!](#table-of-content)
 
 ## 2. What is this?, exactly?
@@ -79,10 +79,7 @@ In the `private` folder i did include the code to generate textures for shaders.
 [Take me up!](#5-how-to-use-it)
 
 ## 6. What is the future of this project?
-I don't have enything particular in plans.
-I'll just share it on Planet Minecraft and maybe one other site and this project will be settled for me.
-
-However i won't turn back on it and i'll gladly moderate and hear about it from You Guys!
+I don't have eny more good ideas, but if You have eny of optimization or feature, then Let's do them someday.
 
 [Take me up!](#table-of-content)
 
